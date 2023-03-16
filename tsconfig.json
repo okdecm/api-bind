@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"target": "ES2020",
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"noImplicitAny": true,
+		"sourceMap": true,
+		"declaration": true,
+		"declarationMap": true,
+		
+		"esModuleInterop": true,
+
+		"module": "CommonJS",
+
+		"baseUrl": "./src",
+		"rootDir": "./src",
+		"outDir": "./dist",
+		"declarationDir": "./dist"
+	},
+	"include": [
+		"src"
+	]
+}

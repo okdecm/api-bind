@@ -1,0 +1,39 @@
+{
+  "name": "api-bind",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "package.json",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okdecm/api-bind.git"
+  },
+  "author": "Dec Murphy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/okdecm/api-bind/issues"
+  },
+  "homepage": "https://github.com/okdecm/api-bind#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.55.0",
+    "eslint": "^8.36.0",
+    "hotscript": "^1.0.10",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "^5.0.2"
+  }
+}

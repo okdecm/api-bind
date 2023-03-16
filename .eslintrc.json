@@ -1,0 +1,199 @@
+{
+	"parser": "@typescript-eslint/parser",
+	"plugins": [
+		"@typescript-eslint"
+	],
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"rules": {
+		"indent": [
+			"error",
+			"tab",
+			{
+				"SwitchCase": 1,
+				"MemberExpression": 0
+			}
+		],
+		"quotes": [
+			"warn",
+			"double"
+		],
+		"semi": [
+			"error",
+			"always"
+		],
+		"curly": [
+			"error",
+			"all"
+		],
+		"array-bracket-newline": [
+			"error",
+			"consistent"
+		],
+		"brace-style": [
+			"error",
+			"allman"
+		],
+		"no-empty": "off",
+		"arrow-spacing": [
+			"error",
+			{
+				"before": true,
+				"after": true
+			}
+		],
+		"comma-spacing": [
+			"error",
+			{
+				"before": false,
+				"after": true
+			}
+		],
+		"dot-location": [
+			"error",
+			"property"
+		],
+		"eol-last": "error",
+		"func-call-spacing": [
+			"error",
+			"never"
+		],
+		"function-paren-newline": [
+			"error",
+			"consistent"
+		],
+		"function-call-argument-newline": [
+			"error",
+			"consistent"
+		],
+		"jsx-quotes": [
+			"warn",
+			"prefer-double"
+		],
+		"key-spacing": [
+			"error",
+			{
+				"mode": "strict",
+				"beforeColon": false,
+				"afterColon": true
+			}
+		],
+		"keyword-spacing": [
+			"error",
+			{
+				"before": true,
+				"after": true
+			}
+		],
+		"lines-between-class-members": [
+			"error",
+			"always",
+			{
+				"exceptAfterSingleLine": true
+			}
+		],
+		"multiline-ternary": [
+			"error",
+			"never"
+		],
+		"no-multi-spaces": "error",
+		"no-multiple-empty-lines": [
+			"error",
+			{
+				"max": 1
+			}
+		],
+		"no-trailing-spaces": "error",
+		"no-whitespace-before-property": "error",
+		"object-curly-newline": [
+			"error",
+			{
+				"ObjectExpression": {
+					"minProperties": 1
+				},
+				"ObjectPattern": "never",
+				"ImportDeclaration": "never",
+				"ExportDeclaration": "never"
+			}
+		],
+		"object-curly-spacing": [
+			"error",
+			"always"
+		],
+		"object-property-newline": "error",
+		"padded-blocks": [
+			"error",
+			"never"
+		],
+		"padding-line-between-statements": [
+			"error",
+			{
+				"blankLine": "always",
+				"prev": "break",
+				"next": [
+					"case",
+					"default"
+				]
+			},
+			{
+				"blankLine": "always",
+				"prev": "*",
+				"next": "return"
+			}
+		],
+		"rest-spread-spacing": [
+			"error",
+			"never"
+		],
+		"space-before-function-paren": [
+			"error",
+			{
+				"anonymous": "never",
+				"named": "never",
+				"asyncArrow": "always"
+			}
+		],
+		"space-in-parens": [
+			"error",
+			"never"
+		],
+		"switch-colon-spacing": [
+			"error",
+			{
+				"before": false,
+				"after": false
+			}
+		],
+		"template-curly-spacing": [
+			"error",
+			"never"
+		],
+		"no-case-declarations": "off",
+		"no-unused-vars": "warn"
+	},
+	"overrides": [
+		{
+			"files": [
+				"*.ts",
+				"*.tsx"
+			],
+			"rules": {
+				"@typescript-eslint/no-empty-interface": "off",
+				"@typescript-eslint/no-non-null-assertion": "off",
+				"indent": "off",
+				"@typescript-eslint/indent": [
+					"error",
+					"tab"
+				]
+			}
+		}
+	],
+	"ignorePatterns": [
+		"node_modules",
+		"dist",
+		"coverage"
+	]
+}
