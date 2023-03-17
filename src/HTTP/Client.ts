@@ -1,11 +1,13 @@
 import { HTTPSchema } from "./Schema";
 import { HTTPConfig, HTTPMethod, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
+import { injectParams, Params } from "./Paths";
 
 import { Fn } from "hotscript";
 
 type HTTPClientRequest = {
 	Path: string;
 	Method: HTTPMethod;
+	Params?: Params;
 	Body?: unknown;
 };
 
@@ -19,10 +21,12 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 	{
 		return async function(request: PrettyRequest<Schema, Transform>): Promise<PrettyResponse<Schema["Responses"][number], Transform>>
 		{
+			const hydratedPath = request.Params ? injectParams(schema.Path, request.Params) : schema.Path;
+
 			const response = await config.communicate({
-				Path: schema.Path,
+				Path: hydratedPath,
 				Method: schema.Method,
-				Body: request.Body
+				Body: schema.Body
 			});
 
 			if (!schema.Responses)

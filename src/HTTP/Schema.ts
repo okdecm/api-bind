@@ -1,7 +1,7 @@
 export interface HTTPSchema<ValidatorType = unknown> {
 	Path: string;
 	Method: "get" | "post" | "put" | "delete";
-	Body: ValidatorType;
+	Body?: ValidatorType;
 	Responses: readonly HTTPResponseSchema<ValidatorType>[]
 }
 

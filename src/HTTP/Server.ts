@@ -4,7 +4,7 @@ import { HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Share
 import { Fn } from "hotscript";
 
 type HTTPServerRequest = {
-	Params: {
+	Params?: {
 		[key: string]: string;
 	};
 	Body?: unknown;

@@ -1,5 +1,5 @@
 import { HTTPSchema, HTTPResponseSchema } from "./Schema";
-import { PathParams } from "./Paths";
+import { PathParameters } from "./Paths";
 
 import { Call, Fn } from "hotscript";
 
@@ -14,13 +14,38 @@ export type HTTPResponse = {
 	Body?: unknown;
 };
 
-export type PrettyRequest<Schema extends HTTPSchema, Transform extends Fn> = Response extends any ? {
-	Params: PathParams<Schema["Path"]>;
-	Body: Call<Transform, Schema["Body"]>;
+/*
+
+	Here be dragons..
+	aka... I hate TypeScript sometimes..
+
+*/
+
+type PrettyRequestBody<Body, Transform extends Fn> = unknown extends Body ? {
+	Body?: unknown;
+} : {
+	Body: Call<Transform, Body>;
+};
+
+type PrettyRequestParams<Params> = Params extends Record<string, never> ? {
+	Params: never;
+} : {
+	Params: Params;
+};
+
+type IntersectionToUnion<I> = I extends infer O ? {
+	[Key in keyof O]: O[Key];
 } : never;
 
-export type PrettyResponse<Response extends HTTPResponseSchema, Transform extends Fn> = Response extends any ? {
-	-readonly [Key in keyof Response]:
-	| Key extends "Body" ? Call<Transform, Response[Key]> : never
-	| Response[Key]
+// Hacky union to intersection had to be used :(
+// Example: `extends infer O ? {[K in keyof O]: O[K]} : never)`
+// Wish declaring conditional optional parameters was easier..
+export type PrettyRequest<Schema extends HTTPSchema, Transform extends Fn> = IntersectionToUnion<(
+	PrettyRequestParams<PathParameters<Schema["Path"]>> & PrettyRequestBody<Schema["Body"], Transform>
+)>;
+
+export type PrettyResponse<Schema extends HTTPResponseSchema, Transform extends Fn> = Schema extends any ? {
+	-readonly [Key in keyof Schema]:
+	| Key extends "Body" ? Call<Transform, Schema[Key]> : never
+	| Schema[Key]
 } : never;
