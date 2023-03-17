@@ -3,25 +3,25 @@ import { HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Share
 
 import { Fn } from "hotscript";
 
-type HTTPServerRequest = {
+type HTTPRouterRequest = {
 	params?: {
 		[key: string]: string;
 	};
 	body?: unknown;
 };
 
-export type HTTPServerConfig<ParserType> = {
-	route: (path: string, method: string, handler: (request: HTTPServerRequest) => Promise<HTTPResponse>) => void;
+export type HTTPRouterConfig<ParserType> = {
+	register: (path: string, method: string, handler: (request: HTTPRouterRequest) => Promise<HTTPResponse>) => void;
 } & HTTPConfig<ParserType>;
 
-export function httpServer<ParserType, Transform extends Fn>(config: HTTPServerConfig<ParserType>)
+export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterConfig<ParserType>)
 {
-	function handle<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>)
+	function route<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>)
 	{
-		config.route(
+		config.register(
 			schema.path,
 			schema.method,
-			async (request: HTTPServerRequest) =>
+			async (request: HTTPRouterRequest) =>
 			{
 				if (schema.body)
 				{
@@ -43,6 +43,6 @@ export function httpServer<ParserType, Transform extends Fn>(config: HTTPServerC
 	}
 
 	return {
-		handle
+		route
 	};
 }
