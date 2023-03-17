@@ -1,7 +1,11 @@
 {
 	"compilerOptions": {
 		"strict": true,
-		"target": "ES2020",
+		"target": "ESNext",
+		"types": [
+			"vite/client",
+			"node"
+		],
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
@@ -9,10 +13,14 @@
 		"sourceMap": true,
 		"declaration": true,
 		"declarationMap": true,
+		"noEmit": true,
 		
 		"esModuleInterop": true,
 
-		"module": "CommonJS",
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+
+		"module": "ESNext",
+		"moduleResolution": "Node",
 
 		"baseUrl": "./src",
 		"rootDir": "./src",
