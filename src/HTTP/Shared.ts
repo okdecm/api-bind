@@ -10,8 +10,8 @@ export type HTTPConfig<ParserType> = {
 };
 
 export type HTTPResponse = {
-	StatusCode: number;
-	Body?: unknown;
+	statusCode: number;
+	body?: unknown;
 };
 
 /*
@@ -20,17 +20,16 @@ export type HTTPResponse = {
 	aka... I hate TypeScript sometimes..
 
 */
-
 type PrettyRequestBody<Body, Transform extends Fn> = unknown extends Body ? {
-	Body?: unknown;
+	body?: unknown;
 } : {
-	Body: Call<Transform, Body>;
+	body: Call<Transform, Body>;
 };
 
 type PrettyRequestParams<Params> = Params extends Record<string, never> ? {
-	Params: never;
+	params: never;
 } : {
-	Params: Params;
+	params: Params;
 };
 
 type IntersectionToUnion<I> = I extends infer O ? {
@@ -41,11 +40,11 @@ type IntersectionToUnion<I> = I extends infer O ? {
 // Example: `extends infer O ? {[K in keyof O]: O[K]} : never)`
 // Wish declaring conditional optional parameters was easier..
 export type PrettyRequest<Schema extends HTTPSchema, Transform extends Fn> = IntersectionToUnion<(
-	PrettyRequestParams<PathParameters<Schema["Path"]>> & PrettyRequestBody<Schema["Body"], Transform>
+	PrettyRequestParams<PathParameters<Schema["path"]>> & PrettyRequestBody<Schema["body"], Transform>
 )>;
 
 export type PrettyResponse<Schema extends HTTPResponseSchema, Transform extends Fn> = Schema extends any ? {
 	-readonly [Key in keyof Schema]:
-	| Key extends "Body" ? Call<Transform, Schema[Key]> : never
+	| Key extends "body" ? Call<Transform, Schema[Key]> : never
 	| Schema[Key]
 } : never;

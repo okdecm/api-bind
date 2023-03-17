@@ -4,10 +4,10 @@ import { HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Share
 import { Fn } from "hotscript";
 
 type HTTPServerRequest = {
-	Params?: {
+	params?: {
 		[key: string]: string;
 	};
-	Body?: unknown;
+	body?: unknown;
 };
 
 export type HTTPServerConfig<ParserType> = {
@@ -16,26 +16,30 @@ export type HTTPServerConfig<ParserType> = {
 
 export function httpServer<ParserType, Transform extends Fn>(config: HTTPServerConfig<ParserType>)
 {
-	function handle<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["Responses"][number], Transform>>)
+	function handle<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>)
 	{
-		return async function(request: PrettyRequest<Schema, Transform>): Promise<PrettyResponse<Schema["Responses"][number], Transform>>
-		{
-			if (schema.Body)
+		config.route(
+			schema.path,
+			schema.method,
+			async (request: HTTPServerRequest) =>
 			{
-				try
+				if (schema.body)
 				{
-					request.Body = config.parse(schema.Body, request.Body);
+					try
+					{
+						request.body = config.parse(schema.body, request.body);
+					}
+					catch (e)
+					{
+						throw new Error("Invalid body");
+					}
 				}
-				catch (e)
-				{
-					throw new Error("Invalid body");
-				}
+
+				const result = await handler(request as PrettyRequest<Schema, Transform>);
+
+				return result as HTTPResponse;
 			}
-
-			const result = await handler(request);
-
-			return result;
-		};
+		);
 	}
 
 	return {

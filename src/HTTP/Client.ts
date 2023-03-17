@@ -5,10 +5,10 @@ import { injectParams, Params } from "./Paths";
 import { Fn } from "hotscript";
 
 type HTTPClientRequest = {
-	Path: string;
-	Method: HTTPMethod;
-	Params?: Params;
-	Body?: unknown;
+	path: string;
+	method: HTTPMethod;
+	params?: Params;
+	body?: unknown;
 };
 
 type HTTPClientConfig<ParserType> = {
@@ -19,22 +19,22 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 {
 	function request<Schema extends HTTPSchema<ParserType>>(schema: Schema)
 	{
-		return async function(request: PrettyRequest<Schema, Transform>): Promise<PrettyResponse<Schema["Responses"][number], Transform>>
+		return async function(request: PrettyRequest<Schema, Transform>): Promise<PrettyResponse<Schema["responses"][number], Transform>>
 		{
-			const hydratedPath = request.Params ? injectParams(schema.Path, request.Params) : schema.Path;
+			const hydratedPath = request.params ? injectParams(schema.path, request.params) : schema.path;
 
 			const response = await config.communicate({
-				Path: hydratedPath,
-				Method: schema.Method,
-				Body: schema.Body
+				path: hydratedPath,
+				method: schema.method,
+				body: schema.body
 			});
 
-			if (!schema.Responses)
+			if (!schema.responses)
 			{
 				throw new Error("Didn't expect a response");
 			}
 
-			const responseSchemas = schema.Responses?.filter(responseSchema => responseSchema.StatusCode == response.StatusCode);
+			const responseSchemas = schema.responses?.filter(responseSchema => responseSchema.statusCode == response.statusCode);
 
 			if (!responseSchemas.length)
 			{
@@ -45,11 +45,11 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 
 			for (const responseSchema of responseSchemas)
 			{
-				if (responseSchema.Body)
+				if (responseSchema.body)
 				{
 					try
 					{
-						response.Body = config.parse(responseSchema.Body, response.Body);
+						response.body = config.parse(responseSchema.body, response.body);
 						valid = true;
 
 						break;
@@ -66,7 +66,7 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 				throw new Error("Invalid response body");
 			}
 
-			return response as PrettyResponse<Schema["Responses"][number], Transform>;
+			return response as PrettyResponse<Schema["responses"][number], Transform>;
 		};
 	}
 
