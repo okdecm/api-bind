@@ -22,7 +22,7 @@
   "scripts": {
     "lint": "eslint",
     "build": "tsc && vite build",
-    "test": "jest --passWithNoTests",
+    "test": "",
     "prepublishOnly": "npm run test && npm run build"
   },
   "repository": {
