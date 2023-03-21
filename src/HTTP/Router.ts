@@ -1,6 +1,8 @@
 import { HTTPSchema } from "./Schema";
 import { HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
 
+import { ValidationError } from "./ValidationError";
+
 import { Fn } from "hotscript";
 
 type HTTPRouterRequest = {
@@ -16,7 +18,9 @@ export type HTTPRouterConfig<ParserType> = {
 
 export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterConfig<ParserType>)
 {
-	function route<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>)
+	type Handler<Schema extends HTTPSchema> = (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>;
+
+	function route<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: Handler<Schema>)
 	{
 		config.register(
 			schema.path,
@@ -31,7 +35,7 @@ export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterC
 					}
 					catch (e)
 					{
-						throw new Error("Invalid body");
+						throw new ValidationError("Invalid body");
 					}
 				}
 
