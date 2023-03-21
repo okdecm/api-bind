@@ -2,14 +2,13 @@
   "name": "api-bind",
   "version": "1.0.2",
   "description": "",
-  "type": "module",
-  "main": "./dist/index.umd.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.umd.js",
       "types": "./dist/index.d.ts"
     }
   },
