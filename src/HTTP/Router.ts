@@ -1,5 +1,5 @@
 import { HTTPSchema } from "./Schema";
-import { HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
+import { HTTPMethod, HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
 
 import { ValidationError } from "./ValidationError";
 
@@ -13,7 +13,7 @@ type HTTPRouterRequest = {
 };
 
 export type HTTPRouterConfig<ParserType> = {
-	register: (path: string, method: string, handler: (request: HTTPRouterRequest) => Promise<HTTPResponse>) => void;
+	register: (path: string, method: HTTPMethod, handler: (request: HTTPRouterRequest) => Promise<HTTPResponse>) => void;
 } & HTTPConfig<ParserType>;
 
 export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterConfig<ParserType>)
