@@ -12,8 +12,10 @@ type HTTPRouterRequest = {
 	body?: unknown;
 };
 
+export type HandlerCallback = (request: HTTPRouterRequest) => Promise<HTTPResponse>;
+
 export type HTTPRouterConfig<ParserType> = {
-	register: (path: string, method: HTTPMethod, handler: (request: HTTPRouterRequest) => Promise<HTTPResponse>) => void;
+	register: (path: string, method: HTTPMethod, handler: HandlerCallback) => void;
 } & HTTPConfig<ParserType>;
 
 export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterConfig<ParserType>)
