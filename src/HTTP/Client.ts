@@ -4,7 +4,7 @@ import { injectParams, Params } from "./Paths";
 
 import { ValidationError } from "./ValidationError";
 
-import { Fn } from "hotscript";
+import { Fn } from "../HOTScript";
 
 type HTTPClientRequest = {
 	path: string;

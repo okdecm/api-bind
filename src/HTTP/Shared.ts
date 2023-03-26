@@ -1,7 +1,7 @@
 import { HTTPSchema, HTTPResponseSchema } from "./Schema";
 import { PathParameters } from "./Paths";
 
-import { Call, Fn } from "hotscript";
+import { Call, Fn } from "../HOTScript";
 
 export type HTTPMethod = "get" | "post" | "put" | "delete";
 

@@ -3,7 +3,7 @@ import { HTTPMethod, HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } f
 
 import { ValidationError } from "./ValidationError";
 
-import { Fn } from "hotscript";
+import { Fn } from "../HOTScript";
 
 type HTTPRouterRequest = {
 	params?: {
@@ -20,9 +20,7 @@ export type HTTPRouterConfig<ParserType> = {
 
 export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterConfig<ParserType>)
 {
-	type Handler<Schema extends HTTPSchema> = (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>;
-
-	function route<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: Handler<Schema>)
+	function route<Schema extends HTTPSchema<ParserType>>(schema: Schema, handler: (request: PrettyRequest<Schema, Transform>) => Promise<PrettyResponse<Schema["responses"][number], Transform>>)
 	{
 		config.register(
 			schema.path,
