@@ -35,7 +35,12 @@ export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterC
 					}
 					catch (e)
 					{
-						throw new ValidationError("Invalid body");
+						throw new ValidationError(
+							"Invalid body",
+							{
+								cause: e
+							}
+						);
 					}
 				}
 
