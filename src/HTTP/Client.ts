@@ -2,9 +2,8 @@ import { HTTPSchema } from "./Schema";
 import { HTTPConfig, HTTPMethod, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
 import { injectParams, Params } from "./Paths";
 
-import { ValidationError } from "./ValidationError";
-
 import { Fn } from "../HOTScript";
+import { parseResponse } from "./Parser";
 
 type HTTPClientRequest = {
 	path: string;
@@ -31,44 +30,9 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 				body: schema.body
 			});
 
-			if (!schema.responses)
-			{
-				throw new ValidationError("Didn't expect a response");
-			}
+			const parsedResponse = parseResponse(config.parse, schema, response);
 
-			const responseSchemas = schema.responses?.filter(responseSchema => responseSchema.statusCode == response.statusCode);
-
-			if (!responseSchemas.length)
-			{
-				throw new ValidationError("Invalid response status code");
-			}
-
-			let valid = false;
-
-			for (const responseSchema of responseSchemas)
-			{
-				if (responseSchema.body)
-				{
-					try
-					{
-						response.body = config.parse(responseSchema.body, response.body);
-						valid = true;
-
-						break;
-					}
-					catch
-					{
-						// Do nothing (other schemas may handle this)
-					}
-				}
-			}
-
-			if (!valid)
-			{
-				throw new ValidationError("Invalid response body");
-			}
-
-			return response as PrettyResponse<Schema["responses"][number], Transform>;
+			return parsedResponse as PrettyResponse<Schema["responses"][number], Transform>;
 		};
 	}
 

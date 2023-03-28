@@ -2,11 +2,12 @@ import { HTTPSchema, HTTPResponseSchema } from "./Schema";
 import { PathParameters } from "./Paths";
 
 import { Call, Fn } from "../HOTScript";
+import { Parser } from "./Parser";
 
 export type HTTPMethod = "get" | "post" | "put" | "delete";
 
 export type HTTPConfig<ParserType> = {
-	parse: <Schema extends ParserType>(schema: Schema, value: unknown) => Schema;
+	parse: Parser<ParserType>;
 };
 
 export type HTTPResponse = {
