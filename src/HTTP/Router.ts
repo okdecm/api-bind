@@ -1,5 +1,6 @@
 import { HTTPSchema } from "./Schema";
 import { HTTPMethod, HTTPConfig, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
+import { parseResponse } from "./Parser";
 
 import { ValidationError } from "./ValidationError";
 
@@ -44,9 +45,11 @@ export function httpRouter<ParserType, Transform extends Fn>(config: HTTPRouterC
 					}
 				}
 
-				const result = await handler(request as PrettyRequest<Schema, Transform>);
+				const response = await handler(request as PrettyRequest<Schema, Transform>);
 
-				return result as HTTPResponse;
+				const parsedResponse = parseResponse(config.parse, schema, response);
+
+				return parsedResponse as HTTPResponse;
 			}
 		);
 	}
