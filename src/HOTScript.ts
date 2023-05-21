@@ -5,6 +5,10 @@
 declare const rawArgs: unique symbol;
 type rawArgs = typeof rawArgs;
 
+export type IntersectionToUnion<I> = I extends infer O ? {
+	[Key in keyof O]: O[Key];
+} : never;
+
 export interface Fn {
 	[rawArgs]: unknown;
 	args: this[rawArgs] extends infer args extends unknown[] ? args : never;

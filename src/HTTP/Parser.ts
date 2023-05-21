@@ -1,5 +1,5 @@
 import { HTTPSchema } from "./Schema";
-import { HTTPResponse } from "./Shared";
+import { HTTPResponse } from "./Common";
 import { ValidationError } from "./ValidationError";
 
 export type Parser<ParserType = unknown> = <Schema extends ParserType>(schema: Schema, value: unknown) => Schema;

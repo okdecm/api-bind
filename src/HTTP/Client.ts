@@ -1,5 +1,5 @@
 import { HTTPSchema } from "./Schema";
-import { HTTPConfig, HTTPMethod, HTTPResponse, PrettyRequest, PrettyResponse } from "./Shared";
+import { HTTPConfig, HTTPMethod, HTTPResponse, PrettyRequestSchema, PrettyResponseSchema } from "./Common";
 import { injectParams, Params } from "./Paths";
 
 import { Fn } from "../HOTScript";
@@ -20,7 +20,7 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 {
 	function request<Schema extends HTTPSchema<ParserType>>(schema: Schema)
 	{
-		return async function(request: PrettyRequest<Schema, Transform>): Promise<PrettyResponse<Schema["responses"][number], Transform>>
+		return async function(request: PrettyRequestSchema<Schema, Transform>): Promise<PrettyResponseSchema<Schema["responses"][number], Transform>>
 		{
 			const hydratedPath = request.params ? injectParams(schema.path, request.params) : schema.path;
 
@@ -32,7 +32,7 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 
 			const parsedResponse = parseResponse(config.parse, schema, response);
 
-			return parsedResponse as PrettyResponse<Schema["responses"][number], Transform>;
+			return parsedResponse as PrettyResponseSchema<Schema["responses"][number], Transform>;
 		};
 	}
 
