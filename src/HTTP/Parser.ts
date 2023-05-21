@@ -22,12 +22,23 @@ export function parseResponse(parse: Parser, schema: HTTPSchema, response: HTTPR
 		throw new ValidationError("Invalid response status code");
 	}
 
-	let valid = false;
+	const expectsResponseBody = responseSchemas.every(responseSchema => typeof responseSchema.body != "undefined");
 
-	for (const responseSchema of responseSchemas)
+	// If we don't have a body, and that's not expected, error out
+	if (!response.body && expectsResponseBody)
 	{
-		if (responseSchema.body)
+		throw new ValidationError("Expected response body");
+	}
+
+	// If we have a body, we _must_ validate it
+	if (response.body)
+	{
+		let valid = false;
+
+		for (const responseSchema of responseSchemas)
 		{
+			if (!responseSchema.body) continue;
+
 			try
 			{
 				parsedResponse.body = parse(responseSchema.body, response.body);
@@ -40,11 +51,11 @@ export function parseResponse(parse: Parser, schema: HTTPSchema, response: HTTPR
 				// Do nothing (other schemas may handle this)
 			}
 		}
-	}
 
-	if (!valid)
-	{
-		throw new ValidationError("Invalid response body");
+		if (!valid)
+		{
+			throw new ValidationError("Invalid response body");
+		}
 	}
 
 	return parsedResponse;
