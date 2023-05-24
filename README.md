@@ -123,8 +123,6 @@ const router = httpRouter<{
 			}
 			catch (e)
 			{
-				console.error("Failed to handle request", e);
-
 				if (isValidationError(e))
 				{
 					return response.status(ClientError.BadRequest).send(e.message);
@@ -132,8 +130,10 @@ const router = httpRouter<{
 
 				if (isAuthorizationError(e))
 				{
-					return response.status(ClientError.Unauthorized).send(e.message);
+					return response.status(ClientError.Unauthorized).send();
 				}
+
+				console.error("Failed to handle request due to error", e);
 
 				response.status(500).send();
 			}
