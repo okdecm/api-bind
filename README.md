@@ -1,6 +1,9 @@
 # api-bind
 A schema based api binding library.
 
+__NOTE: This is a work in progress - some official documentation will eventually come.  
+The examples given should be enough to throw something together in the mean time.__
+
 ## Getting Started
 `api-bind` is used on both the client and the server to enforce adherence to schema based http request -> response contracts.
 This simplifies and abstracts a lot of the wireup necessary to create/handle http requests.
@@ -37,6 +40,118 @@ export const getUserSchema = {
 		}
 	]
 } as const satisfies HTTPSchema<z.ZodType>;
+```
+
+### Contexts
+#### Declaring context
+```typescript
+type Context = {
+	database: Database;
+
+	userID?: string;
+} & IDisposable;
+
+const databasePool = createDatabasePool();
+
+const router = httpRouter<{
+	...
+	Context: Context;
+}>({
+	async createContext(request) {
+		const pickedDatabase = await databasePool.pick();
+
+		return {
+			database: pickedDatabase.item,
+			userID: getUserID(request),
+			async dispose() {
+				const disposing = [
+					pickedDatabase.release()
+				];
+
+				await Promise.allSettled(disposing);
+			}
+		}
+	}
+});
+```
+#### Disposing of a context
+```typescript
+type Context = { ... } & IDisposable;
+
+const router = httpRouter<{
+	...
+	Context: Context;
+}>({
+	async cleanup(context)
+	{
+		await context.dispose();
+	}
+});
+```
+#### Context assertions
+```typescript
+type Context = {
+	userID?: string;
+};
+
+type ContextWithUserID = Context & {
+	userID: string;
+};
+
+function hasUserID(context: Context): asserts context is ContextWithUserID
+{
+	if (!context.userID) throw new AuthorizationError("No user ID");
+}
+
+const router = httpRouter<{
+	...
+	Context: Context;
+}>({
+	register(path, method, handler)
+	{
+		app[method](path, async (request, response) =>
+		{
+			try
+			{
+				const result = await handler({
+					headers: request.headers,
+					params: request.params,
+					body: request.body
+				});
+
+				response.status(result.statusCode).send(result.body);
+			}
+			catch (e)
+			{
+				console.error("Failed to handle request", e);
+
+				if (isValidationError(e))
+				{
+					return response.status(ClientError.BadRequest).send(e.message);
+				}
+
+				if (isAuthorizationError(e))
+				{
+					return response.status(ClientError.Unauthorized).send(e.message);
+				}
+
+				response.status(500).send();
+			}
+		});
+	}
+});
+
+router.route(
+	getMyAccountSchema,
+	async (request, context) =>
+	{
+		hasUserID(context);
+
+		const { userID } = context;
+
+		// type of `userID` is string
+	}
+);
 ```
 
 ### Frontend
@@ -118,31 +233,24 @@ const router = httpRouter<z.ZodType, ZodTransform>({
 	},
 
 	register(path, method, handler) {
-		switch(method) {
-			case "get":
-			case "post":
-			case "put":
-			case "delete":
-				express[method](path, async (request, response) => {
-					// Handler will by default:
-					// - Parse inputs (and throw appropriate errors on failure)
-					try {
-						const result = await handler({
-							params: request.params,
-							body: request.body
-						});
-			
-						response.status(result.statusCode).send(result.body);
-					} catch(e) {
-						// if(e instanceof ParseError) {
-						// 	return response.status(400).send(e.message);
-						// }
-			
-						response.status(500).send();
-					}
+		express[method](path, async (request, response) => {
+			// Handler will by default:
+			// - Parse inputs (and throw appropriate errors on failure)
+			try {
+				const result = await handler({
+					params: request.params,
+					body: request.body
 				});
-			break;
-		}
+	
+				response.status(result.statusCode).send(result.body);
+			} catch(e) {
+				// if(e instanceof ParseError) {
+				// 	return response.status(400).send(e.message);
+				// }
+	
+				response.status(500).send();
+			}
+		});
 	}
 });
 
@@ -157,7 +265,7 @@ import { getUserSchema } from "@app-library/api/schemas/users";
 router.route(getUserSchema, async (request) => {
 	const { params } = request;
 
-	const id = params.id;
+	const { id } = params;
 
 	if(id === "dec") {
 		return {
@@ -175,6 +283,6 @@ router.route(getUserSchema, async (request) => {
 });
 ```
 
-__NOTE: if you need to type the router (e.g. if you are taking it as a parameter in a function) - you can do `function wireupRoutes(router: ReturnType<typeof httpRouter>)`__
+__NOTE: if you need to type the router (e.g. if you are taking it as a parameter in a function) - you can do `function wireupRoutes(router: ReturnType<typeof httpRouter>)`.. I'll eventually make this an interface I promise.__
 
 
