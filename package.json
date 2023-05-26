@@ -1,14 +1,14 @@
 {
   "name": "api-bind",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "",
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
-      "require": "./dist/index.umd.js",
+      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "lint": "eslint",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "test": "",
     "prepublishOnly": "npm run test && npm run build"
   },

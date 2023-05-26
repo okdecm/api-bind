@@ -24,8 +24,7 @@
 
 		"baseUrl": "./src",
 		"rootDir": "./src",
-		"outDir": "./dist",
-		"declarationDir": "./dist"
+		"outDir": "./dist"
 	},
 	"include": [
 		"src"
