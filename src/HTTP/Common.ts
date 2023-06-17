@@ -55,7 +55,9 @@ type PrettyRequestSchemaBody<Body, Transform extends Fn> = unknown extends Body 
 };
 
 type PrettyRequestSchemaParams<Params> = Params extends Record<string, never> ? {
-	params: never;
+	// NOTE: not sure why this doesn't work..
+	// params: never;
+	params?: undefined;
 } : {
 	params: Params;
 };
