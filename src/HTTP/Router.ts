@@ -1,4 +1,4 @@
-import { HTTPSchema } from "./Schema";
+import { HTTPResponseSchema, HTTPSchema } from "./Schema";
 import { HTTPMethod, HTTPRequest, HTTPConfig, HTTPResponse, PrettyRequestSchema, PrettyResponseSchema } from "./Common";
 import { parseResponse } from "./Parser";
 
@@ -21,9 +21,14 @@ export type HTTPRouterConfig<Types extends IHTTPRouterTypes> = {
 	cleanup?: (context: Types["Context"]) => Promise<void>;
 } & HTTPConfig<Types["ParserType"]>;
 
+export interface IHTTPRouter<Types extends IHTTPRouterTypes>
+{
+	route<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema, handler: (request: PrettyRequestSchema<Schema, Types["Transform"]>, context: Types["Context"]) => Promise<PrettyResponseSchema<HTTPResponseSchema<Schema>, Types["Transform"]>>): void;
+}
+
 export function httpRouter<Types extends IHTTPRouterTypes>(config: HTTPRouterConfig<Types>)
 {
-	function route<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema, handler: (request: PrettyRequestSchema<Schema, Types["Transform"]>, context: Types["Context"]) => Promise<PrettyResponseSchema<Schema["responses"][number], Types["Transform"]>>)
+	function route<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema, handler: (request: PrettyRequestSchema<Schema, Types["Transform"]>, context: Types["Context"]) => Promise<PrettyResponseSchema<HTTPResponseSchema<Schema>, Types["Transform"]>>)
 	{
 		config.register(
 			schema.path,

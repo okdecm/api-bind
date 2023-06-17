@@ -1,4 +1,4 @@
-import { HTTPSchema } from "./Schema";
+import { HTTPSchema, HTTPSchemaResponse } from "./Schema";
 import { HTTPConfig, HTTPMethod, HTTPResponse, PrettyRequestSchema, PrettyResponseSchema } from "./Common";
 import { injectParams, Params } from "./Paths";
 
@@ -12,15 +12,20 @@ type HTTPClientRequest = {
 	body?: unknown;
 };
 
-type HTTPClientConfig<ParserType> = {
+export type HTTPClientConfig<ParserType> = {
 	communicate: (request: HTTPClientRequest) => Promise<HTTPResponse>;
 } & HTTPConfig<ParserType>;
 
-export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientConfig<ParserType>)
+export interface IHTTPClient<ParserType, Transform extends Fn>
+{
+	request<Schema extends HTTPSchema<ParserType>>(schema: Schema): (request: PrettyRequestSchema<Schema, Transform>) => Promise<PrettyResponseSchema<HTTPSchemaResponse<Schema>, Transform>>;
+}
+
+export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientConfig<ParserType>): IHTTPClient<ParserType, Transform>
 {
 	function request<Schema extends HTTPSchema<ParserType>>(schema: Schema)
 	{
-		return async function(request: PrettyRequestSchema<Schema, Transform>): Promise<PrettyResponseSchema<Schema["responses"][number], Transform>>
+		return async function(request: PrettyRequestSchema<Schema, Transform>): Promise<PrettyResponseSchema<HTTPSchemaResponse<Schema>, Transform>>
 		{
 			const hydratedPath = request.params ? injectParams(schema.path, request.params) : schema.path;
 
@@ -32,7 +37,7 @@ export function httpClient<ParserType, Transform extends Fn>(config: HTTPClientC
 
 			const parsedResponse = parseResponse(config.parse, schema, response);
 
-			return parsedResponse as PrettyResponseSchema<Schema["responses"][number], Transform>;
+			return parsedResponse as PrettyResponseSchema<HTTPSchemaResponse<Schema>, Transform>;
 		};
 	}
 
