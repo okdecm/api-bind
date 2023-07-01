@@ -38,15 +38,10 @@ export type HTTPResponse = {
 // Hacky union to intersection had to be used :(
 // Example: `extends infer O ? {[K in keyof O]: O[K]} : never)`
 // Wish declaring conditional optional parameters was easier..
-export type PrettyRequestSchema<Schema extends HTTPSchema, Transform extends Fn> = IntersectionToUnion<(
+// TODO: make this "never" when no properties are required
+export type PrettyRequestSchema<Schema extends HTTPSchema, Transform extends Fn = Fn> = IntersectionToUnion<(
 	PrettyRequestSchemaParams<PathParameters<Schema["path"]>> & PrettyRequestSchemaBody<Schema["body"], Transform>
 )>;
-
-export type PrettyResponseSchema<Schema extends HTTPResponseSchema, Transform extends Fn> = Schema extends any ? {
-	-readonly [Key in keyof Schema]:
-	| Key extends "body" ? Call<Transform, Schema[Key]> : never
-	| Schema[Key]
-} : never;
 
 type PrettyRequestSchemaBody<Body, Transform extends Fn> = unknown extends Body ? {
 	body?: unknown;
@@ -55,9 +50,13 @@ type PrettyRequestSchemaBody<Body, Transform extends Fn> = unknown extends Body 
 };
 
 type PrettyRequestSchemaParams<Params> = Params extends Record<string, never> ? {
-	// NOTE: not sure why this doesn't work..
-	// params: never;
 	params?: undefined;
 } : {
 	params: Params;
 };
+
+export type PrettyResponseSchema<Schema extends HTTPResponseSchema, Transform extends Fn = Fn> = Schema extends any ? {
+	-readonly [Key in keyof Schema]:
+	| Key extends "body" ? Call<Transform, Schema[Key]> : never
+	| Schema[Key]
+} : never;

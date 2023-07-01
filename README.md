@@ -21,7 +21,7 @@ npm i api-bind
 ## Examples
 ### Schemas
 ```typescript
-import { HTTPSchema } from "api-bind";
+import { HTTPSchema, StatusCode } from "api-bind";
 import { z } from "zod";
 
 export const getUserSchema = {

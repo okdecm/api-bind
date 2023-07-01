@@ -1,62 +1,64 @@
 import { HTTPSchema } from "./Schema";
-import { HTTPResponse } from "./Common";
+import { HTTPRequest, HTTPResponse } from "./Common";
+
 import { ValidationError } from "./ValidationError";
 
 export type Parser<ParserType = unknown> = <Schema extends ParserType>(schema: Schema, value: unknown) => Schema;
 
+export function parseRequest<Schema extends HTTPSchema>(parse: Parser, schema: Schema, request: HTTPRequest)
+{
+	let parsedBody;
+
+	if (schema.body)
+	{
+		try
+		{
+			parsedBody = parse(schema.body, request.body);
+		}
+		catch (e)
+		{
+			throw new ValidationError("Invalid request body", {
+				cause: e
+			});
+		}
+	}
+
+	return {
+		...request,
+		body: parsedBody
+	};
+}
+
 export function parseResponse(parse: Parser, schema: HTTPSchema, response: HTTPResponse)
 {
-	// TODO: switch to structuredClone when possible
-	// const parsedResponse = structuredClone(response);
-	const parsedResponse = JSON.parse(JSON.stringify(response));
-
-	if (!schema.responses)
-	{
-		throw new ValidationError("Didn't expect a response");
-	}
+	let parsedBody;
 
 	const responseSchemas = schema.responses?.filter(responseSchema => responseSchema.statusCode == response.statusCode);
+	const expectsBody = responseSchemas.every(responseSchema => responseSchema.body);
 
-	if (!responseSchemas.length)
+	for (const responseSchema of responseSchemas)
 	{
-		throw new ValidationError("Invalid response status code");
-	}
+		if (!responseSchema.body) continue;
 
-	const expectsResponseBody = responseSchemas.every(responseSchema => typeof responseSchema.body != "undefined");
-
-	// If we don't have a body, and that's not expected, error out
-	if (!response.body && expectsResponseBody)
-	{
-		throw new ValidationError("Expected response body");
-	}
-
-	// If we have a body, we _must_ validate it
-	if (response.body)
-	{
-		let valid = false;
-
-		for (const responseSchema of responseSchemas)
+		try
 		{
-			if (!responseSchema.body) continue;
+			parsedBody = parse(responseSchema.body, response.body);
 
-			try
-			{
-				parsedResponse.body = parse(responseSchema.body, response.body);
-				valid = true;
-
-				break;
-			}
-			catch
-			{
-				// Do nothing (other schemas may handle this)
-			}
+			break;
 		}
-
-		if (!valid)
+		catch
 		{
-			throw new ValidationError("Invalid response body");
+			// Do nothing (other schemas may handle this)
 		}
 	}
 
-	return parsedResponse;
+	if (expectsBody && !parsedBody)
+	{
+		throw new ValidationError("Invalid response body");
+	}
+
+	return {
+		...response,
+		body: parsedBody
+	};
 }

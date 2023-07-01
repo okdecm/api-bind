@@ -1,6 +1,6 @@
 import { HTTPResponseSchema, HTTPSchema } from "./Schema";
 import { HTTPMethod, HTTPRequest, HTTPConfig, HTTPResponse, PrettyRequestSchema, PrettyResponseSchema } from "./Common";
-import { parseResponse } from "./Parser";
+import { parseRequest, parseResponse } from "./Parser";
 
 import { ValidationError } from "./ValidationError";
 
@@ -8,57 +8,53 @@ import { Fn } from "../HOTScript";
 
 export type HandlerCallback = (request: HTTPRequest) => Promise<HTTPResponse>;
 
-export interface IHTTPRouterTypes
+export interface HTTPRouterTypes
 {
 	ParserType: unknown;
 	Transform: Fn;
 	Context?: unknown;
 }
 
-export type HTTPRouterConfig<Types extends IHTTPRouterTypes> = {
+export type HTTPRouterConfig<Types extends HTTPRouterTypes> = {
 	register: (path: string, method: HTTPMethod, handler: HandlerCallback) => void;
 	createContext?: (request: HTTPRequest) => Promise<Types["Context"]>;
 	cleanup?: (context: Types["Context"]) => Promise<void>;
 } & HTTPConfig<Types["ParserType"]>;
 
-export interface IHTTPRouter<Types extends IHTTPRouterTypes>
+export interface IHTTPRouter<Types extends HTTPRouterTypes = HTTPRouterTypes>
 {
 	route<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema, handler: (request: PrettyRequestSchema<Schema, Types["Transform"]>, context: Types["Context"]) => Promise<PrettyResponseSchema<HTTPResponseSchema<Schema>, Types["Transform"]>>): void;
 }
 
-export function httpRouter<Types extends IHTTPRouterTypes>(config: HTTPRouterConfig<Types>)
+export function httpRouter<Types extends HTTPRouterTypes>(config: HTTPRouterConfig<Types>)
 {
+	const { parse, register, createContext, cleanup } = config;
+
 	function route<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema, handler: (request: PrettyRequestSchema<Schema, Types["Transform"]>, context: Types["Context"]) => Promise<PrettyResponseSchema<HTTPResponseSchema<Schema>, Types["Transform"]>>)
 	{
-		config.register(
+		register(
 			schema.path,
 			schema.method,
 			async (request: HTTPRequest) =>
 			{
-				if (schema.body)
+				let context: Types["Context"] = undefined;
+
+				try
 				{
-					try
+					const parsedRequest = parseRequest(parse, schema, request);
+					context = await createContext?.(parsedRequest);
+					const response = await handler(request as PrettyRequestSchema<Schema, Types["Transform"]>, context as Types["Context"]);
+					const parsedResponse = parseResponse(config.parse, schema, response);
+
+					return parsedResponse as HTTPResponse;
+				}
+				finally
+				{
+					if (context)
 					{
-						request.body = config.parse(schema.body, request.body);
-					}
-					catch (e)
-					{
-						throw new ValidationError("Invalid body", {
-							cause: e
-						});
+						cleanup?.(context);
 					}
 				}
-
-				const context = await config.createContext?.(request);
-				const response = await handler(request as PrettyRequestSchema<Schema, Types["Transform"]>, context as Types["Context"]);
-
-				// TODO: parse response (as we may have extra keys - e.g. when using z.object(...).strict())
-
-				const parsedResponse = parseResponse(config.parse, schema, response);
-
-				config.cleanup?.(context);
-
-				return parsedResponse as HTTPResponse;
 			}
 		);
 	}
