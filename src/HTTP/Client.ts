@@ -1,66 +1,18 @@
-import { HTTPSchema, HTTPSchemaResponse } from "./Schema";
-import { HTTPConfig, HTTPMethod, HTTPResponse, PrettyRequestSchema, PrettyResponseSchema } from "./Common";
+import { Route, RouteDefinition } from "./Router";
+import { RouteSchema } from "./Schemas";
 
-import { injectParams, Params } from "./Paths";
-import { parseRequest, parseResponse } from "./Parser";
+import { Prettify } from "./Common";
 
-import { Fn } from "../HOTScript";
+export type Client<TRoute extends Route> = ClientRouteDefinition<TRoute["root"]>;
 
-export type HTTPClientRequest = {
-	path: string;
-	method: HTTPMethod;
-	params?: Params;
-	body?: unknown;
+export type ClientRouteDefinition<TRouteDefinition extends RouteDefinition> = ClientRouteMethods<TRouteDefinition> & ClientRouteRoutes<TRouteDefinition>;
+
+export type ClientRouteMethods<TRouteDefinition extends RouteDefinition> = {
+	[Key in keyof TRouteDefinition["methods"]]: TRouteDefinition["methods"][Key] extends RouteSchema ? (request: Prettify<TRouteDefinition["methods"][Key]>) => Prettify<TRouteDefinition["methods"][Key]["responses"][number]> : never;
 };
 
-export type HTTPClientTypes = {
-	ParserType: unknown;
-	Transform: Fn;
-}
+export type ClientRouteRoutes<TRouteDefinition extends RouteDefinition> = {
+	[Key in keyof TRouteDefinition["routes"]]: TRouteDefinition["routes"][Key] extends RouteDefinition ? ClientRouteDefinition<TRouteDefinition["routes"][Key]> : never;
+};
 
-export type HTTPClientConfig<Types extends HTTPClientTypes> = {
-	communicate: (request: HTTPClientRequest) => Promise<HTTPResponse>;
-	// TODO: do we make this some event and have things listen to it?
-	// or should this just be a naked function where the implementation can create its own eventemitter
-	onRequestError?(e: unknown): void;
-} & HTTPConfig<Types["ParserType"]>;
-
-export interface IHTTPClient<Types extends HTTPClientTypes = HTTPClientTypes>
-{
-	request<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema): (request: PrettyRequestSchema<Schema, Types["Transform"]>) => Promise<PrettyResponseSchema<HTTPSchemaResponse<Schema>, Types["Transform"]>>;
-}
-
-export function httpClient<Types extends HTTPClientTypes>(config: HTTPClientConfig<Types>): IHTTPClient<Types>
-{
-	const { communicate, parse, onRequestError } = config;
-
-	function request<Schema extends HTTPSchema<Types["ParserType"]>>(schema: Schema)
-	{
-		return async function(request: PrettyRequestSchema<Schema, Types["Transform"]>): Promise<PrettyResponseSchema<HTTPSchemaResponse<Schema>, Types["Transform"]>>
-		{
-			try
-			{
-				const hydratedPath = request.params ? injectParams(schema.path, request.params) : schema.path;
-				const parsedRequest = parseRequest(parse, schema, request);
-				const response = await communicate({
-					path: hydratedPath,
-					method: schema.method,
-					body: parsedRequest.body
-				});
-				const parsedResponse = parseResponse(parse, schema, response);
-
-				return parsedResponse as PrettyResponseSchema<HTTPSchemaResponse<Schema>, Types["Transform"]>;
-			}
-			catch (e)
-			{
-				onRequestError?.(e);
-
-				throw e;
-			}
-		};
-	}
-
-	return {
-		request
-	};
-}
+export declare function createClient<TRoute extends Route>(route: TRoute): Client<TRoute>;
